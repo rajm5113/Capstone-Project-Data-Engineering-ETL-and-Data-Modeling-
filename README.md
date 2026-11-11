@@ -502,7 +502,7 @@ This repository is intended to be a reviewable project portfolio, not a place to
 - Review Terraform variables and backend configuration before deploying from a different AWS account.
 - The `.gitignore` file excludes local credentials and generated Terraform/dbt files.
 
-The notebook may need fresh resource endpoints and configuration values when the lab environment is recreated. Old outputs should not be treated as reusable credentials or current infrastructure identifiers.
+The course environment may issue new resource endpoints and configuration values when it is recreated. Old outputs should not be treated as reusable credentials or current infrastructure identifiers.
 
 ## 14. Scope and Possible Extensions
 
@@ -526,7 +526,7 @@ This project brings together several practical data engineering skills:
 
 ## 16. Acknowledgment
 
-This repository documents the DeFtunes ETL and data modeling capstone completed as part of a Coursera data engineering learning program. The accompanying notebook contains the lab walkthrough and the project-specific implementation sequence.
+This repository documents the DeFtunes ETL and data modeling capstone completed as part of a Coursera data engineering learning program. The original course notebook was used as a reference while preparing the source code and documentation, but is intentionally not included in this portfolio repository.
 
 ---
 
