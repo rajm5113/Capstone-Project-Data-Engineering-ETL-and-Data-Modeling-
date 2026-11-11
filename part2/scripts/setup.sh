@@ -32,15 +32,15 @@ deftunes_load_part2_env() {
   rds_id="$project-rds"
   redshift_id="$project-redshift-cluster"
 
-  export TF_VAR_vpc_id
-  TF_VAR_vpc_id="$(aws rds describe-db-instances \
+  local vpc_id
+  vpc_id="$(aws rds describe-db-instances \
     --db-instance-identifier "$rds_id" \
     --query 'DBInstances[0].DBSubnetGroup.VpcId' --output text)" || return 1
 
   export TF_VAR_private_subnet_a_id
   TF_VAR_private_subnet_a_id="$(aws ec2 describe-subnets \
     --filters "Name=tag:aws:cloudformation:logical-id,Values=PrivateSubnetA" \
-              "Name=vpc-id,Values=$TF_VAR_vpc_id" \
+              "Name=vpc-id,Values=$vpc_id" \
     --query 'Subnets[0].SubnetId' --output text)" || return 1
 
   export TF_VAR_db_sg_id

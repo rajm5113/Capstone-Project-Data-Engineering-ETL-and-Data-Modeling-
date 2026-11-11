@@ -151,9 +151,11 @@ The uploaded lab archive contains Superset UI screenshots but no exported dashbo
 
 ## 8. Repository layout
 
+- dbt_modeling/macros/generate_schema_name.sql — maps the BI view model folder to the exact `deftunes_bi_views` schema required by the lab.
+- dbt_modeling/packages.yml — dbt package manifest (the current SQL models do not require a package macro).
 - dags/ — two Airflow DAGs for the API and songs pipelines.
 - dbt_modeling/ — dbt project, four serving-layer models, two BI views, YAML tests, and the custom BI schema naming macro.
-- scripts/ — dbt packages, a credential-free profile template, environment setup, and Airflow restart helper.
+- scripts/ — credential-free profile template, environment setup, and Airflow restart helper.
 - terraform/assets/ — two extraction and two transformation Glue scripts.
 - terraform/modules/data_quality/ — Glue Data Quality rule sets.
 - terraform/modules/extract_job/ — RDS connection, IAM role, and extraction Glue jobs.

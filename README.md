@@ -441,6 +441,9 @@ The repository keeps the two capstone parts together while separating their impl
     ├── images/
     │   └── Capstone-part2-architecture.svg
     ├── dbt_modeling/
+    │   ├── dbt_project.yml
+    │   ├── packages.yml
+    │   ├── macros/
     │   └── models/
     │       ├── serving_layer/
     │       └── bi_views/
@@ -483,7 +486,7 @@ Use the following sequence as a high-level checklist. Exact endpoint values, res
 
 4. **Prepare and run transformations**
    - Review the scripts under `terraform/assets/transform_jobs/`.
-   - Upload the transformation scripts to the S3 scripts bucket.
+   - The setup script has already uploaded the extraction and transformation scripts to the S3 scripts bucket. Rerun it after changing a Glue script.
    - Deploy `module.transform_job`.
    - Start the JSON transformation job and the songs transformation job.
    - Verify that the transformed Iceberg tables are registered in the Glue Catalog.
@@ -554,7 +557,7 @@ Part 2 extends the original ETL platform with operational controls and an analyt
 
 ### Incremental ingestion
 
-The extraction jobs accept an ingestion date and write source extracts into date-partitioned S3 paths. The corresponding Glue transformations read the selected partition, enrich the data and append it to partitioned Apache Iceberg tables.
+The extraction jobs accept an ingestion date and write source extracts into date-partitioned S3 paths. The corresponding Glue transformations read the selected partition, enrich the data and write it to partitioned Apache Iceberg tables. If the same logical ingestion date is rerun, the matching Iceberg partition is overwritten rather than duplicated.
 
 ### AWS Glue Data Quality
 
@@ -598,7 +601,7 @@ The lab workflow connects Superset to Redshift, registers the BI views as datase
 - **part2/terraform/assets/** — incremental Glue extraction and transformation scripts.
 - **part2/dbt_modeling/models/serving_layer/** — fact and dimension models.
 - **part2/dbt_modeling/models/bi_views/** — sales analysis views.
-- **part2/scripts/** — secure setup helper, dbt profile template, package declaration and Airflow restart helper.
+- **part2/scripts/** — secure setup helper, dbt profile template and Airflow restart helper.
 
 Read the [Part 2 technical guide](part2/README.md) for the complete data-quality rules, task dependencies, model descriptions, Airflow Variables and setup sequence.
 
