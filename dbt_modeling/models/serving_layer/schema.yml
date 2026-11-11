@@ -1,0 +1,59 @@
+version: 2
+
+models:
+  - name: dim_users
+    description: "User dimension containing the latest available profile attributes for each user."
+    columns:
+      - name: user_id
+        description: "Business key for a DeFtunes user."
+        data_tests:
+          - unique
+          - not_null
+      - name: user_lastname
+      - name: user_name
+      - name: user_since
+      - name: place_name
+      - name: country_code
+
+  - name: dim_songs
+    description: "Song dimension containing the latest available catalogue attributes for each song."
+    columns:
+      - name: song_id
+        description: "Business key for a song."
+        data_tests:
+          - unique
+          - not_null
+      - name: track_id
+      - name: title
+      - name: release
+      - name: year
+
+  - name: dim_artists
+    description: "Artist dimension derived from the DeFtunes song catalogue."
+    columns:
+      - name: artist_id
+        description: "Business key for an artist."
+        data_tests:
+          - unique
+          - not_null
+      - name: artist_mbid
+      - name: artist_name
+
+  - name: fact_session
+    description: "Fact table at session-item grain; a session can contain multiple song rows."
+    columns:
+      - name: session_id
+        description: "Identifier shared by song items belonging to the same session; not unique at this model's grain."
+        data_tests:
+          - not_null
+      - name: user_id
+        data_tests:
+          - not_null
+      - name: song_id
+        data_tests:
+          - not_null
+      - name: artist_id
+      - name: price
+      - name: liked
+      - name: liked_since
+      - name: session_start_time

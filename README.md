@@ -368,36 +368,37 @@ dbt debug
 
 A successful connection test reports an `OK` connection status.
 
-### 10.2 Serving-layer modeling
+### 10.2 Serving-layer star schema
 
-The notebook describes an optional modeling extension in which a `serving_layer` folder is created under `dbt_modeling/models/`. The intention is to organize the final analytical models around a star schema:
+The original Coursera notebook labels this modeling extension optional and not graded. It asks for a `serving_layer` folder, one SQL model for each fact or dimension table, a `schema.yml` file, and a run with `dbt run -s serving_layer`. This repository now includes that implementation as a portfolio extension.
 
-- **Fact tables** represent measurable business events or activity.
-- **Dimension tables** provide descriptive context for analyzing those events.
-- dbt SQL model files define the transformations.
-- A `schema.yml` file can document models and define tests.
+The source tables are the Redshift Spectrum external tables in `dev.deftunes_transform`. The dbt profile targets `deftunes_serving`.
 
-When the `serving_layer` models have been created, the notebook shows this command to build them:
+| Model | Role | Transformation |
+|---|---|---|
+| `dim_users` | Dimension | Keeps the latest user attributes for each `user_id`. |
+| `dim_songs` | Dimension | Keeps the latest catalogue attributes for each `song_id`. |
+| `dim_artists` | Dimension | Keeps one current artist record per `artist_id`, sourced from the songs table. |
+| `fact_session` | Fact | Stores user/song/artist activity, price, like status and session start time. |
+
+The models use dbt's `source()` function, with source declarations in `dbt_modeling/models/sources.yml`. The serving models are materialized as Redshift tables. The accompanying `schema.yml` documents the models and checks dimension business keys for uniqueness and completeness.
+
+**Important grain detail:** the upstream Glue JSON transformation explodes the `session_items` array, so the sessions table contains one row per song item in a session. For that reason, `fact_session` is at session-item grain and `session_id` is not tested as a unique key by itself.
+
+Run the project from the `dbt_modeling/` directory after the Glue jobs have populated the three source tables:
 
 ```bash
+dbt debug
 dbt run -s serving_layer
+dbt test -s serving_layer
 ```
 
-The resulting tables can then be checked in Redshift:
+The resulting tables can be checked in Redshift:
 
 ```sql
 SHOW TABLES FROM SCHEMA dev.deftunes_serving;
+SELECT * FROM deftunes_serving.fact_session LIMIT 10;
 ```
-
-Query an individual serving model:
-
-```sql
-SELECT *
-FROM deftunes_serving.<TABLE_NAME>
-LIMIT 10;
-```
-
-**Repository note:** the committed dbt files should be treated as the source of truth for which models are actually implemented. The notebook describes the star-schema exercise as optional; do not assume a particular set of fact or dimension tables unless the corresponding SQL model files are present in this repository.
 
 ## 11. Repository Structure
 
@@ -422,7 +423,14 @@ The repository keeps the two capstone parts together while separating their impl
 │   │   └── serving/
 │   └── root Terraform files
 ├── dbt_modeling/
-│   ├── models/example/
+│   ├── models/
+│   │   ├── sources.yml
+│   │   └── serving_layer/
+│   │       ├── dim_users.sql
+│   │       ├── dim_songs.sql
+│   │       ├── dim_artists.sql
+│   │       ├── fact_session.sql
+│   │       └── schema.yml
 │   ├── dbt_project.yml
 │   └── README.md
 └── part2/
@@ -488,7 +496,8 @@ Use the following sequence as a high-level checklist. Exact endpoint values, res
 6. **Configure and test dbt**
    - Configure a local `~/.dbt/profiles.yml` using the safe example profile.
    - Run `dbt debug` to test connectivity.
-   - Run the dbt models that are present in the project.
+   - Run `dbt run -s serving_layer` to build the four dimension/fact models.
+   - Run `dbt test -s serving_layer` to check the model tests.
    - Query the resulting serving tables in Redshift.
 
 ## 13. Security and Configuration

@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: deftunes_transform
+    description: "External tables exposed by Redshift Spectrum from the DeFtunes transformation-zone Iceberg tables."
+    schema: deftunes_transform
+    tables:
+      - name: users
+        description: "Transformed DeFtunes users, including location attributes and ingestion date."
+      - name: songs
+        description: "Transformed DeFtunes song catalogue from the PostgreSQL source."
+      - name: sessions
+        description: "Transformed session-item records. The upstream Glue job explodes session_items, so one session_id can appear on multiple rows."
