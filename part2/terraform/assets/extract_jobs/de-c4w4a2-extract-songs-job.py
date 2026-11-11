@@ -39,8 +39,12 @@ source_frame = glue_context.create_dynamic_frame.from_options(
 
 s3_path = (
     f"s3://{data_lake_bucket}/landing_zone/db_songs/"
-    f"ingest_on={partition_date}"
+    f"ingest_on={partition_date}/"
 )
+
+# The job reads a full source snapshot for this logical date. Clear only this
+# date's landing prefix before writing so retries do not append stale CSV files.
+glue_context.purge_s3_path(s3_path, options={"retentionPeriod": 0})
 
 glue_context.write_dynamic_frame.from_options(
     frame=source_frame,

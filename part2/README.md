@@ -46,7 +46,7 @@ The main processing path is:
 
 ## 3. Incremental ingestion
 
-The extract jobs receive an ingest_date argument. The date becomes a partition key in the S3 landing zone:
+The extract jobs receive an `ingest_date` argument. The date becomes a partition key in the S3 landing zone. The API extractor overwrites the matching date folder; the RDS extractor purges only that date folder before writing a fresh full songs snapshot. The Iceberg transformation jobs likewise overwrite only the matching `ingest_on` partition, so rerunning the same logical date does not accumulate duplicate landing files or curated partitions:
 
 - API users: landing_zone/api/users/ingest_on=YYYY_MM_DD/
 - API sessions: landing_zone/api/sessions/ingest_on=YYYY_MM_DD/

@@ -21,8 +21,12 @@ ingest_day = date.today()
 partition_date = ingest_day.strftime("%Y_%m_%d")
 output_path = (
     f"s3://{args['data_lake_bucket']}/landing_zone/db_songs/"
-    f"ingest_on={partition_date}"
+    f"ingest_on={partition_date}/"
 )
+
+# This job extracts a full songs snapshot for one logical ingestion date.
+# Remove only that date's previous landing files so reruns cannot accumulate duplicates.
+glue_context.purge_s3_path(output_path, options={"retentionPeriod": 0})
 
 source_frame = glue_context.create_dynamic_frame.from_options(
     connection_type="postgresql",
