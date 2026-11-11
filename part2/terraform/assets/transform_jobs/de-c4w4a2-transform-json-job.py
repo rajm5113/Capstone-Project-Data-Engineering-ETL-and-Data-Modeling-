@@ -46,7 +46,6 @@ glue_context = GlueContext(sc)
 spark = glue_context.spark_session
 job = Job(glue_context)
 job.init(args["JOB_NAME"], args)
-spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
 
 ingest_date_str = args["ingest_date"]
 ingest_date = datetime.strptime(ingest_date_str, "%Y-%m-%d")
@@ -62,11 +61,12 @@ sessions_path = (
 users_df = spark.read.json(users_path)
 sessions_df = spark.read.json(sessions_path)
 
-users_df = users_df.withColumn(
-    "ingest_on", to_date(lit(ingest_date_str), "yyyy-MM-dd")
-)
+processing_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
 users_df = (
-    users_df.withColumn("latitude", col("user_location")[0])
+    users_df.withColumn("ingest_on", to_date(lit(ingest_date_str), "yyyy-MM-dd"))
+    .withColumn("processing_timestamp", lit(processing_timestamp))
+    .withColumn("latitude", col("user_location")[0])
     .withColumn("longitude", col("user_location")[1])
     .withColumn("place_name", col("user_location")[2])
     .withColumn("country_code", col("user_location")[3])
@@ -74,57 +74,50 @@ users_df = (
     .drop("user_location")
 )
 
-processing_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-users_df = users_df.withColumn(
-    "processing_timestamp", lit(processing_timestamp)
-)
-
-sessions_df = sessions_df.withColumn(
-    "ingest_on", to_date(lit(ingest_date_str), "yyyy-MM-dd")
-).withColumn(
-    "processing_timestamp", lit(processing_timestamp)
-).withColumn(
-    "session_ts", to_timestamp(col("session_start_time"))
-)
-
-sessions_df = sessions_df.withColumn(
-    "session_item", explode("session_items")
-).select(
-    col("user_id"),
-    col("session_id"),
-    col("session_item.song_id").alias("song_id"),
-    col("session_item.song_name").alias("song_name"),
-    col("session_item.artist_id").alias("artist_id"),
-    col("session_item.artist_name").alias("artist_name"),
-    col("session_item.price").alias("price"),
-    col("session_item.currency").alias("currency"),
-    col("session_item.liked").alias("liked"),
-    col("session_item.liked_since").alias("liked_since"),
-    col("user_agent"),
-    col("session_ts").alias("session_start_time"),
-    col("ingest_on"),
-    col("processing_timestamp"),
+sessions_df = (
+    sessions_df.withColumn("ingest_on", to_date(lit(ingest_date_str), "yyyy-MM-dd"))
+    .withColumn("processing_timestamp", lit(processing_timestamp))
+    .withColumn("session_ts", to_timestamp(col("session_start_time")))
+    .withColumn("session_item", explode("session_items"))
+    .select(
+        col("user_id"),
+        col("session_id"),
+        col("session_item.song_id").alias("song_id"),
+        col("session_item.song_name").alias("song_name"),
+        col("session_item.artist_id").alias("artist_id"),
+        col("session_item.artist_name").alias("artist_name"),
+        col("session_item.price").alias("price"),
+        col("session_item.currency").alias("currency"),
+        col("session_item.liked").alias("liked"),
+        col("session_item.liked_since").alias("liked_since"),
+        col("user_agent"),
+        col("session_ts").alias("session_start_time"),
+        col("ingest_on"),
+        col("processing_timestamp"),
+    )
 )
 
 catalog_database = args["catalog_database"]
 users_table = args["users_table"]
 sessions_table = args["sessions_table"]
-
 existing_tables = {
     table.name for table in spark.catalog.listTables(catalog_database)
 }
 
+
 def write_iceberg_table(dataframe, table_name):
     target = f"glue_catalog.{catalog_database}.{table_name}"
-    writer = (
-        dataframe.writeTo(target)
-        .tableProperty("format-version", "2")
-        .partitionedBy("ingest_on")
-    )
     if table_name in existing_tables:
-        writer.append()
+        # Overwrite only this ingest_on partition: safe to retry a DAG run.
+        dataframe.writeTo(target).overwritePartitions()
     else:
-        writer.createOrReplace()
+        (
+            dataframe.writeTo(target)
+            .tableProperty("format-version", "2")
+            .partitionedBy("ingest_on")
+            .createOrReplace()
+        )
+
 
 write_iceberg_table(users_df, users_table)
 write_iceberg_table(sessions_df, sessions_table)

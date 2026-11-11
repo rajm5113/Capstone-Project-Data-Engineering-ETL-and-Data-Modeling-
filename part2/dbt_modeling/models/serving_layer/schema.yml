@@ -2,15 +2,18 @@ version: 2
 
 models:
   - name: fact_session
-    description: "Fact table containing session-level song purchase and engagement events."
+    description: "Fact table at session-item grain; one session can contain multiple song rows."
     columns:
       - name: session_id
-        description: "Session identifier; expected to be unique and not null."
+        description: "Session identifier shared by all song items in a session; not unique at this model's grain."
         data_tests:
-          - unique
           - not_null
       - name: user_id
+        data_tests:
+          - not_null
       - name: song_id
+        data_tests:
+          - not_null
       - name: artist_id
       - name: price
       - name: liked
@@ -18,20 +21,23 @@ models:
       - name: session_start_time
 
   - name: dim_songs
-    description: "Song dimension."
+    description: "Song dimension with one latest record per song."
     columns:
       - name: song_id
-        description: "Song identifier."
+        description: "Business key for a song."
+        data_tests:
+          - unique
+          - not_null
       - name: track_id
       - name: title
       - name: release
       - name: year
 
   - name: dim_artists
-    description: "Artist dimension."
+    description: "Artist dimension with one selected descriptive record per artist."
     columns:
       - name: artist_id
-        description: "Artist identifier; expected to be unique and not null."
+        description: "Business key for an artist."
         data_tests:
           - unique
           - not_null
@@ -39,10 +45,10 @@ models:
       - name: artist_name
 
   - name: dim_users
-    description: "User dimension."
+    description: "User dimension with the latest available profile attributes for each user."
     columns:
       - name: user_id
-        description: "User identifier; expected to be unique and not null."
+        description: "Business key for a DeFtunes user."
         data_tests:
           - unique
           - not_null

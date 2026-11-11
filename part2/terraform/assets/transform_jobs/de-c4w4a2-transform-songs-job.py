@@ -44,7 +44,6 @@ glue_context = GlueContext(sc)
 spark = glue_context.spark_session
 job = Job(glue_context)
 job.init(args["JOB_NAME"], args)
-spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
 
 ingest_date = datetime.strptime(args["ingest_date"], "%Y-%m-%d")
 partition_date = ingest_date.strftime("%Y_%m_%d")
@@ -67,33 +66,35 @@ songs_frame = glue_context.create_dynamic_frame.from_options(
 )
 
 songs_df = songs_frame.toDF()
-
-# Cast source CSV strings to analytical types before writing the Iceberg table.
 for column_name in ("duration", "artist_familiarity", "artist_hotttnesss"):
     songs_df = songs_df.withColumn(column_name, F.col(column_name).cast("float"))
-
 for column_name in ("year", "track_7digitalid", "shs_perf", "shs_work"):
     songs_df = songs_df.withColumn(column_name, F.col(column_name).cast("int"))
 
-songs_df = songs_df.withColumn(
-    "ingest_on", F.to_date(F.lit(args["ingest_date"]), "yyyy-MM-dd")
-).withColumn("source_from", F.lit("postgres_rds"))
+songs_df = (
+    songs_df.withColumn(
+        "ingest_on",
+        F.to_date(F.lit(args["ingest_date"]), "yyyy-MM-dd"),
+    )
+    .withColumn("source_from", F.lit("postgres_rds"))
+)
 
 catalog_database = args["catalog_database"]
 songs_table = args["songs_table"]
+target = f"glue_catalog.{catalog_database}.{songs_table}"
 existing_tables = {
     table.name for table in spark.catalog.listTables(catalog_database)
 }
-target = f"glue_catalog.{catalog_database}.{songs_table}"
 
-writer = (
-    songs_df.writeTo(target)
-    .tableProperty("format-version", "2")
-    .partitionedBy("ingest_on")
-)
 if songs_table in existing_tables:
-    writer.append()
+    # Overwrite only this logical date partition on retries/re-runs.
+    songs_df.writeTo(target).overwritePartitions()
 else:
-    writer.createOrReplace()
+    (
+        songs_df.writeTo(target)
+        .tableProperty("format-version", "2")
+        .partitionedBy("ingest_on")
+        .createOrReplace()
+    )
 
 job.commit()
