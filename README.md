@@ -401,67 +401,50 @@ LIMIT 10;
 
 ## 11. Repository Structure
 
-The repository is organized so that the notebook, infrastructure code, Glue scripts, dbt project, and architecture images can be reviewed separately.
+The repository keeps the two capstone parts together while separating their implementation files.
 
-```text
+~~~text
 .
 ├── README.md
 ├── .gitignore
 ├── images/
 │   └── Capstone-diagram.svg
-│
-└── part2/
-    ├── README.md
-    ├── dags/
-    ├── dbt_modeling/
-    │   └── models/
-    │       ├── serving_layer/
-    │       └── bi_views/
-    ├── images/
-    │   └── Capstone-part2-architecture.svg
-    ├── scripts/
-    └── terraform/
-        ├── assets/
-        └── modules/
 ├── scripts/
 │   ├── setup.sh
 │   └── profiles.yml.example
-│
 ├── terraform/
 │   ├── assets/
 │   │   ├── extract_jobs/
-│   │   │   ├── de-c4w4a1-api-extract-job.py
-│   │   │   └── de-c4w4a1-extract-songs-job.py
 │   │   └── transform_jobs/
-│   │       ├── de-c4w4a1-transform-json-job.py
-│   │       └── de-c4w4a1-transform-songs-job.py
-│   │
 │   ├── modules/
 │   │   ├── extract_job/
 │   │   ├── transform_job/
 │   │   └── serving/
-│   │
-│   ├── backend.tf
-│   ├── main.tf
-│   ├── outputs.tf
-│   ├── providers.tf
-│   ├── variables.tf
-│   └── .terraform.lock.hcl
-│
-└── dbt_modeling/
-    ├── analyses/
-    ├── macros/
-    ├── models/
-    │   └── example/
-    │       ├── my_first_dbt_model.sql
-    │       ├── my_second_dbt_model.sql
-    │       └── schema.yml
-    ├── seeds/
-    ├── snapshots/
-    ├── tests/
-    ├── dbt_project.yml
-    └── README.md
-```
+│   └── root Terraform files
+├── dbt_modeling/
+│   ├── models/example/
+│   ├── dbt_project.yml
+│   └── README.md
+└── part2/
+    ├── README.md
+    ├── dags/
+    │   ├── deftunes_api_pipeline.py
+    │   └── deftunes_songs_pipeline.py
+    ├── images/
+    │   └── Capstone-part2-architecture.svg
+    ├── dbt_modeling/
+    │   └── models/
+    │       ├── serving_layer/
+    │       └── bi_views/
+    ├── scripts/
+    └── terraform/
+        ├── assets/
+        └── modules/
+            ├── data_quality/
+            ├── extract_job/
+            ├── transform_job/
+            └── serving/
+~~~
 
 Generated directories such as Terraform's `.terraform/`, Terraform state files, dbt `target/` and `logs/`, and local credential files are intentionally excluded from version control.
 
