@@ -11,19 +11,31 @@ from airflow.providers.amazon.aws.operators.glue import (
 from airflow.providers.docker.operators.docker import DockerOperator
 from docker.types import Mount
 
-# Set these Airflow Variables in the target environment before unpausing the DAG.
-# Defaults allow the DAG to be parsed before environment-specific values are configured.
+# Configure these Airflow Variables in the target environment before unpausing.
 PROJECT = Variable.get("deftunes_project", default_var="de-c4w4a2")
 AWS_REGION = Variable.get("aws_region", default_var="us-east-1")
-DATA_BUCKET_NAME = Variable.get("deftunes_data_lake_bucket", default_var="CHANGE_ME_DATA_LAKE_BUCKET")
-SCRIPTS_BUCKET_NAME = Variable.get("deftunes_scripts_bucket", default_var="CHANGE_ME_SCRIPTS_BUCKET")
-API_BASE_URL = Variable.get("deftunes_api_base_url", default_var="https://CHANGE_ME_API_HOST").rstrip("/")
-CATALOG_DATABASE = Variable.get("deftunes_catalog_database", default_var="de_c4w4a2_silver_db")
-GLUE_ROLE_ARN = Variable.get("deftunes_glue_role_arn", default_var="arn:aws:iam::<ACCOUNT_ID>:role/de-c4w4a2-glue-role")
+DATA_BUCKET_NAME = Variable.get(
+    "deftunes_data_lake_bucket", default_var="CHANGE_ME_DATA_LAKE_BUCKET"
+)
+SCRIPTS_BUCKET_NAME = Variable.get(
+    "deftunes_scripts_bucket", default_var="CHANGE_ME_SCRIPTS_BUCKET"
+)
+API_BASE_URL = Variable.get(
+    "deftunes_api_base_url", default_var="https://CHANGE_ME_API_HOST"
+).rstrip("/")
+CATALOG_DATABASE = Variable.get(
+    "deftunes_catalog_database", default_var="de_c4w4a2_silver_db"
+)
+GLUE_ROLE_ARN = Variable.get(
+    "deftunes_glue_role_arn",
+    default_var="arn:aws:iam::<ACCOUNT_ID>:role/de-c4w4a2-glue-role",
+)
 DBT_PROJECT_HOST_PATH = Variable.get(
     "deftunes_dbt_project_host_path", default_var="/docker_dbt/dbt_project"
 )
-DBT_NETWORK_MODE = Variable.get("deftunes_dbt_network_mode", default_var="container:dbt")
+DBT_NETWORK_MODE = Variable.get(
+    "deftunes_dbt_network_mode", default_var="container:dbt"
+)
 PIPELINE_SCHEDULE = Variable.get("deftunes_schedule", default_var="0 0 1 * *")
 
 default_args = {
@@ -56,7 +68,11 @@ with DAG(
         iam_role_name=f"{PROJECT}-glue-role",
         s3_bucket=SCRIPTS_BUCKET_NAME,
         region_name=AWS_REGION,
-        create_job_kwargs={"GlueVersion": "4.0", "NumberOfWorkers": 2, "WorkerType": "G.1X"},
+        create_job_kwargs={
+            "GlueVersion": "4.0",
+            "NumberOfWorkers": 2,
+            "WorkerType": "G.1X",
+        },
         script_args={
             "--target_path": f"s3://{DATA_BUCKET_NAME}/landing_zone/api/users",
             "--api_url": f"{API_BASE_URL}/users",
@@ -74,7 +90,11 @@ with DAG(
         iam_role_name=f"{PROJECT}-glue-role",
         s3_bucket=SCRIPTS_BUCKET_NAME,
         region_name=AWS_REGION,
-        create_job_kwargs={"GlueVersion": "4.0", "NumberOfWorkers": 2, "WorkerType": "G.1X"},
+        create_job_kwargs={
+            "GlueVersion": "4.0",
+            "NumberOfWorkers": 2,
+            "WorkerType": "G.1X",
+        },
         script_args={
             "--target_path": f"s3://{DATA_BUCKET_NAME}/landing_zone/api/sessions",
             "--api_url": f"{API_BASE_URL}/sessions",
@@ -92,7 +112,11 @@ with DAG(
         iam_role_name=f"{PROJECT}-glue-role",
         s3_bucket=SCRIPTS_BUCKET_NAME,
         region_name=AWS_REGION,
-        create_job_kwargs={"GlueVersion": "4.0", "NumberOfWorkers": 2, "WorkerType": "G.1X"},
+        create_job_kwargs={
+            "GlueVersion": "4.0",
+            "NumberOfWorkers": 2,
+            "WorkerType": "G.1X",
+        },
         script_args={
             "--catalog_database": CATALOG_DATABASE,
             "--ingest_date": "{{ next_ds }}",
@@ -111,7 +135,12 @@ with DAG(
         number_of_workers=2,
         wait_for_completion=True,
         region_name=AWS_REGION,
-        datasource={"GlueTable": {"TableName": "users", "DatabaseName": CATALOG_DATABASE}},
+        datasource={
+            "GlueTable": {
+                "TableName": "users",
+                "DatabaseName": CATALOG_DATABASE,
+            }
+        },
     )
 
     dq_sessions = GlueDataQualityRuleSetEvaluationRunOperator(
@@ -121,7 +150,12 @@ with DAG(
         number_of_workers=2,
         wait_for_completion=True,
         region_name=AWS_REGION,
-        datasource={"GlueTable": {"TableName": "sessions", "DatabaseName": CATALOG_DATABASE}},
+        datasource={
+            "GlueTable": {
+                "TableName": "sessions",
+                "DatabaseName": CATALOG_DATABASE,
+            }
+        },
     )
 
     dbt = DockerOperator(
@@ -132,19 +166,14 @@ with DAG(
         docker_url="unix://var/run/docker.sock",
         command=(
             "bash -c "
-            '"dbt --version && dbt run '
-            "--profiles-dir /usr/app/.dbt "
-            '--project-dir /usr/app/dbt_modeling"'
+            '"dbt --version && '
+            "dbt run --profiles-dir /usr/app/.dbt --project-dir /usr/app/dbt_modeling && "
+            'dbt test --profiles-dir /usr/app/.dbt --project-dir /usr/app/dbt_modeling"'
         ),
         mounts=[
             Mount(
-                source=os.path.join(DBT_PROJECT_HOST_PATH, "dbt_modeling", "dbt_project.yml"),
-                target="/usr/app/dbt_modeling/dbt_project.yml",
-                type="bind",
-            ),
-            Mount(
-                source=os.path.join(DBT_PROJECT_HOST_PATH, "dbt_modeling", "models"),
-                target="/usr/app/dbt_modeling/models",
+                source=os.path.join(DBT_PROJECT_HOST_PATH, "dbt_modeling"),
+                target="/usr/app/dbt_modeling",
                 type="bind",
             ),
             Mount(
