@@ -442,7 +442,6 @@ The repository keeps the two capstone parts together while separating their impl
     │   └── Capstone-part2-architecture.svg
     ├── dbt_modeling/
     │   ├── dbt_project.yml
-    │   ├── packages.yml
     │   ├── macros/
     │   └── models/
     │       ├── serving_layer/

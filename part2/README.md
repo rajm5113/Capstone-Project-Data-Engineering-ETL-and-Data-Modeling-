@@ -134,7 +134,7 @@ The serving models are materialized as tables in `deftunes_serving`. The three d
 
 The BI views are configured as dbt views in the `bi_views` model folder. The custom `generate_schema_name` macro in `part2/dbt_modeling/macros/` maps this folder to the exact schema named `deftunes_bi_views` in the course's Superset instructions (dbt's default naming would otherwise prepend the profile schema).
 
-The dbt project includes schema YAML files describing the models and tests. The dbt project includes a `packages.yml` manifest for `calogica/dbt_date`; run `dbt deps` from the `part2/dbt_modeling` directory before model execution only when you need to install project packages. The current SQL models do not call functions from this package.
+The dbt project includes schema YAML files describing the models and tests. No external dbt package is required by the current models.
 
 ## 7. Visualization with Apache Superset
 
@@ -152,7 +152,6 @@ The uploaded lab archive contains Superset UI screenshots but no exported dashbo
 ## 8. Repository layout
 
 - dbt_modeling/macros/generate_schema_name.sql — maps the BI view model folder to the exact `deftunes_bi_views` schema required by the lab.
-- dbt_modeling/packages.yml — dbt package manifest (the current SQL models do not require a package macro).
 - dags/ — two Airflow DAGs for the API and songs pipelines.
 - dbt_modeling/ — dbt project, four serving-layer models, two BI views, YAML tests, and the custom BI schema naming macro.
 - scripts/ — credential-free profile template, environment setup, and Airflow restart helper.
