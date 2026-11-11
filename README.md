@@ -10,7 +10,7 @@
 
 DeFtunes is a music platform that offers subscription-based song streaming and has expanded into digital song purchases. The business needs a reliable way to bring together operational song information and purchase activity so that its Data Analysis team can query consistent, well-structured data.
 
-This project implements the first stage of that data platform. It extracts data from two types of sources, stores the raw data in an Amazon S3 data lake, transforms it into Apache Iceberg tables, and exposes the transformed datasets to Amazon Redshift. Terraform is used to provision the AWS infrastructure, while dbt provides the SQL modeling workflow for the serving layer.
+This two-part project builds that data platform in stages. Part 1 establishes the AWS data lake, extraction and transformation workloads, Iceberg tables, Glue Catalog, Redshift Spectrum and Terraform infrastructure. Part 2 extends the platform with incremental ingestion, Glue Data Quality rules, Airflow orchestration, dbt dimensional models and business views, and an Apache Superset visualization workflow.
 
 The pipeline follows a three-zone, medallion-style design:
 
@@ -18,7 +18,7 @@ The pipeline follows a three-zone, medallion-style design:
 2. **Transformation zone:** cleaned and structured data stored as Apache Iceberg tables in Amazon S3 and registered in the AWS Glue Data Catalog.
 3. **Serving zone:** analytical access through Amazon Redshift and Redshift Spectrum, with dbt used to organize SQL transformations for the final serving layer.
 
-The goal is to establish a repeatable foundation that can be extended with orchestration, data quality checks, and reporting.
+Part 2 extends this foundation into a more governed and operational workflow with quality validation, scheduled orchestration and BI-ready outputs.
 
 ## 2. Business Problem
 
@@ -57,7 +57,7 @@ The main technical objectives are:
 
 The architecture diagram below is included in the repository.
 
-![DeFtunes data engineering architecture](Capstone-diagram.png)
+![DeFtunes Part 1 data engineering architecture](images/Capstone-diagram.svg)
 
 ### 4.1 High-level data flow
 
@@ -407,15 +407,22 @@ The repository is organized so that the notebook, infrastructure code, Glue scri
 .
 ├── README.md
 ├── .gitignore
-├── C4_W4_Assignment_1.ipynb
-│
 ├── images/
-│   ├── Capstone-diagram.png
-│   ├── dbt_config.png
-│   ├── AWSLogout.png
-│   ├── reboot.png
-│   └── terminal_crash.png
+│   └── Capstone-diagram.svg
 │
+└── part2/
+    ├── README.md
+    ├── dags/
+    ├── dbt_modeling/
+    │   └── models/
+    │       ├── serving_layer/
+    │       └── bi_views/
+    ├── images/
+    │   └── Capstone-part2-architecture.svg
+    ├── scripts/
+    └── terraform/
+        ├── assets/
+        └── modules/
 ├── scripts/
 │   ├── setup.sh
 │   └── profiles.yml.example
@@ -516,15 +523,7 @@ The notebook may need fresh resource endpoints and configuration values when the
 
 ## 14. Scope and Possible Extensions
 
-The uploaded capstone notebook identifies this work as **Part 1 — ETL and Data Modeling**. It establishes the data architecture, extraction and transformation pipeline, serving infrastructure, and dbt workflow.
-
-The notebook describes a subsequent part of the capstone as an opportunity to improve the initial architecture with:
-
-- Pipeline orchestration.
-- Data visualization.
-- Data quality checks.
-
-These are natural extensions of the foundation built here. They should only be described as implemented when their corresponding code and configuration are included in the repository.
+Both capstone parts are represented in this repository. The assignment notebooks are intentionally not included; the executable source code, Terraform configuration, Airflow DAGs, dbt models and project documentation are the portfolio artifacts.
 
 ## 15. Skills Demonstrated
 
@@ -549,3 +548,72 @@ This repository documents the DeFtunes ETL and data modeling capstone completed 
 ---
 
 **Project takeaway:** DeFtunes demonstrates how operational database records and API data can be brought into an S3-based data lake, transformed into catalogued Iceberg tables, and made available for analytics through Redshift Spectrum and a dbt-oriented serving workflow.
+
+
+---
+
+# Part 2 — Data Quality, Orchestration and Visualization
+
+Part 2 extends the original ETL platform with operational controls and an analytics presentation layer. The complete source and a dedicated technical guide are under **part2/**.
+
+![DeFtunes Part 2 architecture](part2/images/Capstone-part2-architecture.svg)
+
+## Part 2 capabilities
+
+### Incremental ingestion
+
+The extraction jobs accept an ingestion date and write source extracts into date-partitioned S3 paths. The corresponding Glue transformations read the selected partition, enrich the data and append it to partitioned Apache Iceberg tables.
+
+### AWS Glue Data Quality
+
+The Terraform data_quality module defines rule sets for users, sessions and songs in the Glue Data Catalog. The rule sets check required values, identifier lengths, user-ID uniqueness and a business price bound. Airflow runs these checks after transformation and waits for their results before starting dbt.
+
+### Apache Airflow orchestration
+
+Two Airflow DAGs coordinate the workflow:
+
+- **Songs DAG:** RDS extract → songs transform → songs quality evaluation → dbt.
+- **API DAG:** users and sessions API extracts in parallel → JSON transform → users and sessions quality checks in parallel → dbt.
+
+Retries, retry delays, catchup/backfill behavior and date-driven job parameters are configured in the DAGs. Environment-specific values are externalized into Airflow Variables.
+
+**Schedule note:** the supplied course DAG sample defaults to a monthly cron schedule (0 0 1 * *), while the assignment prose describes a daily run. The schedule is configurable through the deftunes_schedule Airflow Variable; validate the desired backfill window before changing it to @daily.
+
+### dbt analytical models
+
+Part 2 adds a dimensional serving layer:
+
+| Model | Role |
+|---|---|
+| dim_users | User descriptive attributes |
+| dim_songs | Song descriptive attributes |
+| dim_artists | Artist descriptive attributes |
+| fact_session | Session-level measures and relationships |
+
+It also adds two business views:
+
+- **sales_per_artist_vw:** total sales by artist and year.
+- **sales_per_country_vw:** total sales by country, month and year.
+
+### Apache Superset visualization
+
+The lab workflow connects Superset to Redshift, registers the BI views as datasets, builds charts and assembles a dashboard. The supplied archive did not include a portable Superset dashboard export, so this repository documents the workflow rather than claiming to contain a dashboard definition.
+
+## Part 2 source layout
+
+- **part2/dags/** — Airflow DAGs for API and songs pipelines.
+- **part2/terraform/modules/data_quality/** — DQDL rule sets.
+- **part2/terraform/assets/** — incremental Glue extraction and transformation scripts.
+- **part2/dbt_modeling/models/serving_layer/** — fact and dimension models.
+- **part2/dbt_modeling/models/bi_views/** — sales analysis views.
+- **part2/scripts/** — secure setup helper, dbt profile template, package declaration and Airflow restart helper.
+
+Read the [Part 2 technical guide](part2/README.md) for the complete data-quality rules, task dependencies, model descriptions, Airflow Variables and setup sequence.
+
+## Portfolio and reproducibility notes
+
+- The Part 2 setup script prompts for database passwords and does not append them to the shell profile.
+- Local dbt profiles, Terraform variable files and Terraform state must remain untracked.
+- Airflow Variables must be configured for the target environment before unpausing either DAG.
+- The training IAM policy includes broad permissions for the lab; replace wildcard permissions with least-privilege policies before production use.
+- AWS Glue, Redshift, S3, EC2, Airflow and Superset may incur costs. Review and clean up lab resources after use.
