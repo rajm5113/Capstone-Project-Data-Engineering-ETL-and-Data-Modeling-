@@ -91,8 +91,17 @@ deftunes_load_part1_env() {
   fi
   export TF_VAR_source_password TF_VAR_redshift_password
 
-  echo "Part 1 environment variables loaded into this shell."
-  echo "API base URL: $TF_VAR_api_endpoint"
+  # Upload the four Glue scripts referenced by the Terraform Glue jobs.
+  aws s3 cp terraform/assets/extract_jobs/de-c4w4a1-api-extract-job.py \
+    "s3://$TF_VAR_scripts_bucket/de-c4w4a1-api-extract-job.py" || return 1
+  aws s3 cp terraform/assets/extract_jobs/de-c4w4a1-extract-songs-job.py \
+    "s3://$TF_VAR_scripts_bucket/de-c4w4a1-extract-songs-job.py" || return 1
+  aws s3 cp terraform/assets/transform_jobs/de-c4w4a1-transform-json-job.py \
+    "s3://$TF_VAR_scripts_bucket/de-c4w4a1-transform-json-job.py" || return 1
+  aws s3 cp terraform/assets/transform_jobs/de-c4w4a1-transform-songs-job.py \
+    "s3://$TF_VAR_scripts_bucket/de-c4w4a1-transform-songs-job.py" || return 1
+
+  echo "Part 1 environment variables loaded and Glue scripts uploaded."
   echo "No passwords were written to ~/.bashrc."
 }
 

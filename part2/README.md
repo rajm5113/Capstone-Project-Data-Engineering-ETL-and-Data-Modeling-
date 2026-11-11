@@ -134,7 +134,7 @@ The serving models are materialized as tables in `deftunes_serving`. The three d
 
 The BI views are configured as dbt views in the `bi_views` model folder. The custom `generate_schema_name` macro in `part2/dbt_modeling/macros/` maps this folder to the exact schema named `deftunes_bi_views` in the course's Superset instructions (dbt's default naming would otherwise prepend the profile schema).
 
-The dbt project includes schema YAML files describing the models and tests. The package declaration in part2/scripts/packages.yml includes calogica/dbt_date.
+The dbt project includes schema YAML files describing the models and tests. The dbt project includes a `packages.yml` manifest for `calogica/dbt_date`; run `dbt deps` from the `part2/dbt_modeling` directory before model execution only when you need to install project packages. The current SQL models do not call functions from this package.
 
 ## 7. Visualization with Apache Superset
 
@@ -152,7 +152,7 @@ The uploaded lab archive contains Superset UI screenshots but no exported dashbo
 ## 8. Repository layout
 
 - dags/ — two Airflow DAGs for the API and songs pipelines.
-- dbt_modeling/ — dbt project, four serving-layer models, two BI views, and YAML tests.
+- dbt_modeling/ — dbt project, four serving-layer models, two BI views, YAML tests, and the custom BI schema naming macro.
 - scripts/ — dbt packages, a credential-free profile template, environment setup, and Airflow restart helper.
 - terraform/assets/ — two extraction and two transformation Glue scripts.
 - terraform/modules/data_quality/ — Glue Data Quality rule sets.
@@ -194,18 +194,51 @@ From the repository root:
    terraform validate
    terraform plan
 
-4. Apply modules in dependency order, reviewing each plan before approving it:
+4. Deploy the infrastructure first, but do **not** create the data-quality rulesets yet:
 
+   ```bash
    terraform apply -target=module.extract_job
    terraform apply -target=module.transform_job
    terraform apply -target=module.serving
+   ```
+
+5. Run the three initial extraction jobs (the Terraform defaults load January 2020 into the February 1, 2020 ingestion partition):
+
+   ```bash
+   aws glue start-job-run --job-name de-c4w4a2-api-users-extract-job
+   aws glue start-job-run --job-name de-c4w4a2-api-sessions-extract-job
+   aws glue start-job-run --job-name de-c4w4a2-rds-extract-job
+   ```
+
+   Check each job run in the AWS Glue console or use `aws glue get-job-run` with its returned run ID. Wait until all three report `SUCCEEDED`.
+
+6. Run the two transformation jobs:
+
+   ```bash
+   aws glue start-job-run --job-name de-c4w4a2-json-transform-job
+   aws glue start-job-run --job-name de-c4w4a2-songs-transform-job
+   ```
+
+   Wait for both jobs to report `SUCCEEDED`. Confirm that the `users`, `sessions` and `songs` tables exist in the Glue Catalog database and can be queried through the Redshift Spectrum external schema.
+
+7. **Now create the Data Quality rulesets**, because the assignment requires the catalog tables to exist before the rulesets are defined:
+
+   ```bash
    terraform apply -target=module.data_quality
+   ```
 
-5. Perform the initial extraction and transformation runs for the required historical date range, then verify the resulting Glue Catalog tables and Redshift Spectrum schemas.
-6. Copy the dbt project and DAG files to the lab-provided S3 locations (for example, the DBTBucket and DagsBucket outputs) and configure the Airflow Variables listed above.
-7. Verify the DAGs are loaded, unpause the intended DAGs, and inspect task logs and quality evaluation results.
-8. Configure Superset's Redshift connection and create datasets, charts and a dashboard from the BI views.
+8. Copy the full dbt project and Airflow DAG files to the bucket locations provided by CloudFormation:
 
+   ```bash
+   aws s3 cp part2/dbt_modeling/ s3://<DBTBucket>/dbt_project/dbt_modeling/ --recursive
+   aws s3 cp part2/dags/ s3://<DagsBucket>/dags/ --recursive
+   ```
+
+   Replace `<DBTBucket>` and `<DagsBucket>` with their exact CloudFormation output values. Configure the Airflow Variables listed above, including the actual bucket names, API base URL and full `glue_role_arn` Terraform output. Do not unpause DAGs while any placeholder is still configured.
+
+9. Verify that both DAGs are loaded, unpause only the intended DAGs, and inspect Glue, data-quality and dbt task logs.
+
+10. Configure Superset's Redshift connection and create datasets, charts and a dashboard from the `deftunes_bi_views` schema.
 Actual bucket names, network IDs, endpoints and role ARNs are environment-specific and must come from the target AWS environment. They are intentionally not stored in this repository.
 
 ## 10. Security and operational notes

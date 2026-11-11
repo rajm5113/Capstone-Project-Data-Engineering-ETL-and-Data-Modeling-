@@ -472,7 +472,7 @@ Use the following sequence as a high-level checklist. Exact endpoint values, res
 
 2. **Prepare the extraction jobs**
    - Review the Python scripts under `terraform/assets/extract_jobs/`.
-   - Upload the extraction scripts to the S3 scripts bucket.
+   - The setup script uploads the four extraction and transformation scripts to the discovered S3 scripts bucket.
    - Initialize Terraform and deploy `module.extract_job`.
 
 3. **Extract the source data**
