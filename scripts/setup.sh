@@ -12,7 +12,7 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
 fi
 
 deftunes_load_part1_env() {
-  local project account_id vpc_id subnet_id db_sg_id rds_host data_bucket redshift_host
+  local project account_id vpc_id subnet_id db_sg_id rds_host data_bucket redshift_host value
 
   project="${TF_VAR_project:-de-c4w4a1}"
   export TF_VAR_project="$project"

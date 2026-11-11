@@ -11,7 +11,7 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
 fi
 
 deftunes_load_part2_env() {
-  local project account_id rds_id redshift_id
+  local project account_id rds_id redshift_id value
 
   export TF_VAR_project="${TF_VAR_project:-de-c4w4a2}"
   export TF_VAR_region="${TF_VAR_region:-us-east-1}"

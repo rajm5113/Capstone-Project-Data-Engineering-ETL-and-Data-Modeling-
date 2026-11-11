@@ -218,7 +218,7 @@ Terraform is used to define and provision the AWS infrastructure. The project se
 
 | Module | Main responsibility | Supporting configuration |
 |---|---|---|
-| `extract_job` | Creates the extraction Glue jobs and supporting access/network configuration. | Glue job definitions, IAM role and policies, private subnet and database security-group configuration, variables, and outputs. |
+| `extract_job` | Creates the extraction Glue jobs and supporting access/network configuration. | Glue job definitions, IAM role and policies, public subnet A and database security-group configuration, variables, and outputs. |
 | `transform_job` | Creates the Glue transformation jobs and associated configuration for writing transformed datasets. | Glue job definitions, variables, and outputs. |
 | `serving` | Creates the Redshift serving infrastructure and its required IAM configuration. | Redshift resource definition, IAM configuration, provider configuration, variables, and outputs. |
 
