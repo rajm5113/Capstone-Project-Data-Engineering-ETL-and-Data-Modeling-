@@ -18,6 +18,8 @@ Part 2 adds five capabilities:
 
 ## 2. Part 2 architecture
 
+![DeFtunes Part 2 architecture](images/Capstone-part2-architecture.svg)
+
 The main processing path is:
 
 **DeFtunes API (users and sessions) + PostgreSQL RDS (songs)**  
