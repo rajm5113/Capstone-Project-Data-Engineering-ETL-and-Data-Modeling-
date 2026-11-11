@@ -183,7 +183,7 @@ This is a training-lab implementation and requires an AWS account with the requi
 
 From the repository root:
 
-1. Review part2/terraform/terraform.tfvars.example and create a local terraform.tfvars with the actual environment values. Do not commit the local file.
+1. For the standard Coursera lab, do not create a local `terraform.tfvars`. The setup script discovers and exports the required `TF_VAR_*` values. The `terraform.tfvars.example` file is only for overriding the project or region in a custom deployment; do not leave placeholders in a local tfvars file.
 2. Source the setup script to discover the lab's AWS resources, prompt for database passwords, and upload the Glue scripts:
 
    source part2/scripts/setup.sh

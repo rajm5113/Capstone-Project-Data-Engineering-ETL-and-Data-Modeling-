@@ -1,22 +1,7 @@
-project              = "de-c4w4a2"
-region               = "us-east-1"
-public_subnet_a_id  = "<PUBLIC_SUBNET_A_ID>"
-db_sg_id             = "<RDS_SECURITY_GROUP_ID>"
-source_host          = "<RDS_ENDPOINT>"
-source_port          = 5432
-source_database      = "postgres"
-source_username      = "<RDS_USERNAME>"
-source_password      = "<SET_LOCALLY>"
-data_lake_bucket     = "<DATA_LAKE_BUCKET>"
-scripts_bucket       = "<SCRIPTS_BUCKET>"
-catalog_database     = "de_c4w4a2_silver_db"
-users_table          = "users"
-sessions_table       = "sessions"
-songs_table          = "songs"
-redshift_role_name   = "de-c4w4a2-load-role"
-redshift_host        = "<REDSHIFT_ENDPOINT>"
-redshift_user        = "<REDSHIFT_USERNAME>"
-redshift_password    = "<SET_LOCALLY>"
-redshift_database    = "dev"
-redshift_port        = 5439
-api_endpoint         = "https://<DEFTUNES_API_HOST>"
+# Optional overrides for a custom lab deployment.
+# For the standard Coursera lab, do NOT copy this file to terraform.tfvars:
+# source part2/scripts/setup.sh discovers and exports the required TF_VAR_* values.
+# If changing these defaults, set the same TF_VAR_project / TF_VAR_region
+# before sourcing the setup script so discovery and Terraform use the same environment.
+project = "de-c4w4a2"
+region  = "us-east-1"
