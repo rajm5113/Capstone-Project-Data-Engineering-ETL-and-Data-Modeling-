@@ -71,6 +71,7 @@ export TF_VAR_redshift_database=dev
 export TF_VAR_redshift_port=5439
 
 read -r -p "DeFtunes API base URL (include https:// or http://): " TF_VAR_api_endpoint
+export TF_VAR_api_endpoint
 read -r -s -p "Source PostgreSQL password: " TF_VAR_source_password
 printf '\n'
 read -r -s -p "Redshift password: " TF_VAR_redshift_password
