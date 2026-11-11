@@ -8,9 +8,9 @@ resource "aws_glue_connection" "rds_connection" {
   }
 
   physical_connection_requirements {
-    availability_zone      = data.aws_subnet.private_a.availability_zone
+    availability_zone      = data.aws_subnet.public_a.availability_zone
     security_group_id_list = [data.aws_security_group.db_sg.id]
-    subnet_id              = data.aws_subnet.private_a.id
+    subnet_id              = data.aws_subnet.public_a.id
   }
 }
 

@@ -1,6 +1,6 @@
 project              = "de-c4w4a2"
 region               = "us-east-1"
-private_subnet_a_id  = "<PRIVATE_SUBNET_ID>"
+public_subnet_a_id  = "<PUBLIC_SUBNET_A_ID>"
 db_sg_id             = "<RDS_SECURITY_GROUP_ID>"
 source_host          = "<RDS_ENDPOINT>"
 source_port          = 5432

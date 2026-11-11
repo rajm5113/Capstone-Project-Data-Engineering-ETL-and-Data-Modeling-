@@ -8,9 +8,9 @@ variable "region" {
   description = "AWS region."
 }
 
-variable "private_subnet_a_id" {
+variable "public_subnet_a_id" {
   type        = string
-  description = "Private subnet ID used for the Glue-to-RDS connection."
+  description = "Public subnet A ID used for the Glue JDBC connection in the course lab."
 }
 
 variable "db_sg_id" {

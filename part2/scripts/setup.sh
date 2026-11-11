@@ -37,9 +37,9 @@ deftunes_load_part2_env() {
     --db-instance-identifier "$rds_id" \
     --query 'DBInstances[0].DBSubnetGroup.VpcId' --output text)" || return 1
 
-  export TF_VAR_private_subnet_a_id
-  TF_VAR_private_subnet_a_id="$(aws ec2 describe-subnets \
-    --filters "Name=tag:aws:cloudformation:logical-id,Values=PrivateSubnetA" \
+  export TF_VAR_public_subnet_a_id
+  TF_VAR_public_subnet_a_id="$(aws ec2 describe-subnets \
+    --filters "Name=tag:aws:cloudformation:logical-id,Values=PublicSubnetA" \
               "Name=vpc-id,Values=$vpc_id" \
     --query 'Subnets[0].SubnetId' --output text)" || return 1
 
@@ -76,7 +76,7 @@ deftunes_load_part2_env() {
   export TF_VAR_redshift_database=dev
   export TF_VAR_redshift_port=5439
 
-  for value in "$TF_VAR_private_subnet_a_id" "$TF_VAR_db_sg_id" \
+  for value in "$TF_VAR_public_subnet_a_id" "$TF_VAR_db_sg_id" \
                "$TF_VAR_source_host" "$TF_VAR_data_lake_bucket" "$TF_VAR_redshift_host"; do
     if [[ -z "$value" || "$value" == "None" ]]; then
       echo "AWS resource discovery returned an empty value. Check the lab account and CloudFormation stack." >&2

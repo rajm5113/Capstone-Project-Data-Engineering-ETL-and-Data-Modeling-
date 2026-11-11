@@ -1,5 +1,5 @@
-data "aws_subnet" "private_a" {
-  id = var.private_subnet_a_id
+data "aws_subnet" "public_a" {
+  id = var.public_subnet_a_id
 }
 
 data "aws_security_group" "db_sg" {

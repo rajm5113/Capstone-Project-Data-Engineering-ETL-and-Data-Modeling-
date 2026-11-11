@@ -10,9 +10,9 @@ variable "region" {
   default     = "us-east-1"
 }
 
-variable "private_subnet_a_id" {
+variable "public_subnet_a_id" {
   type        = string
-  description = "Private subnet ID used by the AWS Glue RDS connection."
+  description = "Public subnet A ID used by the AWS Glue RDS connection in the course lab."
 }
 
 variable "db_sg_id" {

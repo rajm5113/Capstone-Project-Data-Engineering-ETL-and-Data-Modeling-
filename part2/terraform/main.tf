@@ -3,7 +3,7 @@ module "extract_job" {
 
   project               = var.project
   region                = var.region
-  private_subnet_a_id   = var.private_subnet_a_id
+  public_subnet_a_id   = var.public_subnet_a_id
   db_sg_id              = var.db_sg_id
   host                  = var.source_host
   port                  = var.source_port
