@@ -57,7 +57,7 @@ The main technical objectives are:
 
 The architecture diagram below is included in the repository.
 
-![DeFtunes data engineering architecture](images/Capstone-diagram.png)
+![DeFtunes data engineering architecture](Capstone-diagram.png)
 
 ### 4.1 High-level data flow
 
