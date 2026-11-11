@@ -1,10 +1,17 @@
 terraform {
   required_providers {
+    aws = {
+      source = "hashicorp/aws"
+    }
     redshift = {
       source  = "brainly/redshift"
       version = ">= 0.2.4"
     }
   }
+}
+
+provider "aws" {
+  region = var.region
 }
 
 provider "redshift" {

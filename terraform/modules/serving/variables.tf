@@ -1,45 +1,45 @@
 variable "project" {
   type        = string
-  description = "Project name"
+  description = "Project name."
 }
 
 variable "region" {
   type        = string
-  description = "AWS Region"
+  description = "AWS region."
 }
 
 variable "redshift_role_name" {
   type        = string
-  description = "Role name for redshift spectrum"
+  description = "IAM role name for Redshift Spectrum."
 }
 
 variable "catalog_database" {
   type        = string
-  description = "Curated DB name"
-  sensitive   = true
+  description = "Glue Data Catalog database name."
 }
 
 variable "redshift_host" {
   type        = string
-  description = "Redshift host"
+  description = "Redshift endpoint hostname."
 }
 
 variable "redshift_user" {
   type        = string
-  description = "Redshift user"
+  description = "Redshift username."
 }
 
 variable "redshift_password" {
   type        = string
-  description = "Redshift user's password"
+  description = "Redshift password."
+  sensitive   = true
 }
 
 variable "redshift_database" {
   type        = string
-  description = "Redshift database"
+  description = "Redshift database name."
 }
 
 variable "redshift_port" {
   type        = number
-  description = "Redshift port"
+  description = "Redshift port."
 }

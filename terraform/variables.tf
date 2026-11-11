@@ -1,116 +1,117 @@
 variable "project" {
   type        = string
-  description = "Project name"
+  description = "Project name prefix used for AWS resource names."
 }
 
 variable "region" {
   type        = string
-  description = "AWS region"
+  description = "AWS region."
 }
 
 variable "vpc_id" {
   type        = string
-  description = "VPC ID"
+  description = "VPC containing the DeFtunes source database."
 }
 
 variable "public_subnet_a_id" {
   type        = string
-  description = "Public subnet A ID"
+  description = "Subnet used by the Glue JDBC connection in the lab environment."
 }
 
 variable "db_sg_id" {
   type        = string
-  description = "Security group ID for RDS"
+  description = "Security group associated with the RDS database."
 }
 
 variable "source_host" {
   type        = string
-  description = "RDS host"
+  description = "PostgreSQL RDS endpoint hostname."
 }
 
 variable "source_port" {
   type        = number
-  description = "RDS port"
-  default     = 3306
+  description = "PostgreSQL RDS port."
+  default     = 5432
 }
 
 variable "source_database" {
   type        = string
-  description = "RDS database name"
+  description = "Source PostgreSQL database name."
 }
 
 variable "source_username" {
   type        = string
-  description = "RDS username"
+  description = "Source PostgreSQL username."
 }
 
 variable "source_password" {
   type        = string
-  description = "RDS password"
+  description = "Source PostgreSQL password."
   sensitive   = true
+}
+
+variable "api_endpoint" {
+  type        = string
+  description = "DeFtunes API base URL including http:// or https://, without /users or /sessions."
 }
 
 variable "data_lake_bucket" {
   type        = string
-  description = "Data lake bucket name"
+  description = "Amazon S3 data lake bucket name."
 }
-
 
 variable "scripts_bucket" {
   type        = string
-  description = "Glue scripts bucket name"
+  description = "Amazon S3 bucket containing AWS Glue scripts."
 }
 
 variable "catalog_database" {
   type        = string
-  description = "Curated DB name"
-  sensitive   = true
+  description = "AWS Glue Data Catalog database name."
 }
 
 variable "users_table" {
   type        = string
-  description = "Table to store users data"
-  sensitive   = true
+  description = "Glue Catalog table name for users."
 }
 
 variable "sessions_table" {
   type        = string
-  description = "Table to store sessions data"
-  sensitive   = true
+  description = "Glue Catalog table name for sessions."
 }
 
 variable "songs_table" {
   type        = string
-  description = "Table to store songs data"
-  sensitive   = true
+  description = "Glue Catalog table name for songs."
 }
 
 variable "redshift_role_name" {
   type        = string
-  description = "Role for Redshift spectrum"
+  description = "IAM role name granted to Redshift Spectrum."
 }
 
 variable "redshift_host" {
   type        = string
-  description = "Redshift host"
+  description = "Amazon Redshift cluster endpoint hostname."
 }
 
 variable "redshift_user" {
   type        = string
-  description = "Redshift user"
+  description = "Amazon Redshift username."
 }
 
 variable "redshift_password" {
   type        = string
-  description = "Redshift user's password"
+  description = "Amazon Redshift password."
+  sensitive   = true
 }
 
 variable "redshift_database" {
   type        = string
-  description = "Redshift database"
+  description = "Amazon Redshift database name."
 }
 
 variable "redshift_port" {
   type        = number
-  description = "Redshift port"
+  description = "Amazon Redshift port."
 }

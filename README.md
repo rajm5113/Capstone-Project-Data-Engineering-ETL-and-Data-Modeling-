@@ -506,10 +506,10 @@ This repository is intended to be a reviewable project portfolio, not a place to
 
 - Do not commit AWS access keys, session tokens, console sign-in URLs, database passwords, private keys, or real `.env` files.
 - Keep `scripts/profiles.yml` local; use `scripts/profiles.yml.example` as the shareable template.
-- Supply database credentials through the local environment or interactive prompts.
+- Source `scripts/setup.sh` to discover lab resource identifiers and load `TF_VAR_` settings into the current shell. It prompts for the DeFtunes API base URL and database passwords; passwords are not written to `~/.bashrc`.
 - Use current endpoints from the AWS environment rather than embedding temporary endpoint values in source code.
 - Review Terraform variables and backend configuration before deploying from a different AWS account.
-- The `.gitignore` file excludes local credentials and generated Terraform/dbt files.
+- The `.gitignore` file excludes local credentials and generated Terraform/dbt files. The local Terraform backend writes `terraform.tfstate`, which remains untracked.
 
 The course environment may issue new resource endpoints and configuration values when it is recreated. Old outputs should not be treated as reusable credentials or current infrastructure identifiers.
 
