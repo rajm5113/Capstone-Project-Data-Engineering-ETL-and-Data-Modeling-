@@ -52,7 +52,7 @@ The extract jobs receive an ingest_date argument. The date becomes a partition k
 - API sessions: landing_zone/api/sessions/ingest_on=YYYY_MM_DD/
 - RDS songs: landing_zone/db_songs/ingest_on=YYYY_MM_DD/
 
-The transformation jobs read the corresponding date partition and add ingestion metadata to curated records. The Iceberg tables are partitioned by ingest_on; when a target table exists, the job appends the incoming batch, otherwise it creates the table.
+The transformation jobs read the corresponding date partition and add ingestion metadata to curated records. The Iceberg tables are partitioned by `ingest_on`. When a target table already exists, the Glue transformation overwrites only the matching ingestion-date partition. This makes retries and reruns for the same logical date idempotent instead of appending duplicate copies of that batch.
 
 The date passed by Airflow is based on the DAG data interval. The sample Terraform job defaults use an initial historical date (2020-02-01) to support the lab's initial backfill. Update the initial API range and ingestion date when adapting this example to another data period.
 
@@ -78,7 +78,7 @@ Two DAGs coordinate the pipelines. Both include retries and a five-minute retry 
 
 File: part2/dags/deftunes_songs_pipeline.py
 
-**start → RDS songs extraction (Glue) → songs transformation to Iceberg (Glue) → songs data-quality evaluation (Glue Data Quality) → dbt debug and dbt run (DockerOperator) → end**
+**start → RDS songs extraction (Glue) → songs transformation to Iceberg (Glue) → songs data-quality evaluation (Glue Data Quality) → dbt debug, dbt run and dbt test (DockerOperator) → end**
 
 ### 5.2 API pipeline
 
@@ -86,7 +86,7 @@ File: part2/dags/deftunes_api_pipeline.py
 
 The users and sessions API extraction tasks run in parallel. The JSON transformation starts after both finish. The users and sessions quality checks then run in parallel. dbt runs after both quality checks have completed.
 
-**start → [users API extract + sessions API extract] → JSON transformation → [users quality + sessions quality] → dbt → end**
+**start → [users API extract + sessions API extract] → JSON transformation → [users quality + sessions quality] → dbt run and dbt test → end**
 
 ### 5.3 Airflow configuration
 
@@ -123,7 +123,7 @@ The dbt project is under part2/dbt_modeling. It separates serving-layer dimensio
 | dim_artists | Dimension | deftunes_transform.songs | Distinct artist identifiers and names |
 | fact_session | Fact | deftunes_transform.sessions | Session-level user, song, artist, price, like and time measures |
 
-The serving models are materialized as tables in deftunes_serving. The schema tests define uniqueness and non-null expectations for key identifiers.
+The serving models are materialized as tables in `deftunes_serving`. The three dimensions select one latest row per business key using ingestion metadata, so repeated incremental snapshots do not create duplicate dimension keys. The fact model remains at session-item grain because the upstream Glue transformation explodes the `session_items` array. Therefore `session_id` is required but is deliberately not tested as unique.
 
 ### 6.2 Business views
 
@@ -132,7 +132,7 @@ The serving models are materialized as tables in deftunes_serving. The schema te
 | sales_per_artist_vw | Year and artist | Sum of session prices by artist and year |
 | sales_per_country_vw | Year, month and country | Sum of session prices by user country and calendar month |
 
-The BI views are configured as dbt views in the bi_views model folder. With the project's schema naming convention, dbt creates the BI schema shown in the lab as deftunes_bi_views.
+The BI views are configured as dbt views in the `bi_views` model folder. The custom `generate_schema_name` macro in `part2/dbt_modeling/macros/` maps this folder to the exact schema named `deftunes_bi_views` in the course's Superset instructions (dbt's default naming would otherwise prepend the profile schema).
 
 The dbt project includes schema YAML files describing the models and tests. The package declaration in part2/scripts/packages.yml includes calogica/dbt_date.
 
@@ -143,7 +143,7 @@ The lab environment provides an Apache Superset instance. The documented workflo
 1. Open the Superset endpoint provided by the AWS environment's CloudFormation outputs.
 2. Configure an Amazon Redshift database connection using the environment's Redshift SQLAlchemy connection URI.
 3. Test the connection.
-4. Add datasets from the BI views schema (the lab describes deftunes_bi_views).
+4. Add datasets from the `deftunes_bi_views` schema.
 5. Create a chart for each view: sales by artist/year and sales by country/month/year.
 6. Create a dashboard and add, arrange, resize and save the charts.
 
@@ -213,7 +213,7 @@ Actual bucket names, network IDs, endpoints and role ARNs are environment-specif
 - Do not commit profiles.yml, terraform.tfvars, Terraform state, access keys, passwords, tokens, or AWS console sign-in URLs.
 - part2/scripts/setup.sh prompts for database passwords and keeps them in the current shell session; it does not append them to ~/.bashrc.
 - part2/scripts/profiles.yml.example is a template. Create a private local dbt profile and replace all placeholders.
-- Airflow Variables must be configured in the Airflow environment. The DAGs use placeholders by default so they can be parsed before configuration; do not unpause the DAGs while values are still placeholders.
+- Airflow Variables must be configured in the Airflow environment. The DAGs use placeholders by default so they can be parsed before configuration; do not unpause the DAGs while values are still placeholders. The DockerOperator mounts the complete dbt project directory and the local `.dbt` profile directory.
 - The IAM policy in the training module is intentionally broad to mirror a lab exercise. Replace wildcard permissions with least-privilege permissions before adapting it to production.
 - The Terraform backend uses local state. Keep the state file private and back it up securely.
 - AWS Glue, Redshift, S3, EC2, Airflow and Superset can incur charges. Review resources and destroy lab infrastructure when it is no longer needed, while preserving any data that must be retained.
