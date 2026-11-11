@@ -1,0 +1,57 @@
+# ==========================================
+# Environment variables and credentials
+# ==========================================
+.env
+.env.*
+!.env.example
+.aws/
+**/profiles.yml
+credentials
+credentials.*
+*.pem
+*.key
+
+# ==========================================
+# Terraform generated files
+# ==========================================
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfplan.*
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Keep Terraform provider lock files:
+# .terraform.lock.hcl
+
+# ==========================================
+# dbt generated files
+# ==========================================
+**/target/
+**/dbt_packages/
+**/logs/
+
+# ==========================================
+# Python generated files
+# ==========================================
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ==========================================
+# Logs and temporary files
+# ==========================================
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+
+# ==========================================
+# IDE configuration
+# ==========================================
+.idea/
+.vscode/
