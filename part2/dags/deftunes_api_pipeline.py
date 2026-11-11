@@ -51,7 +51,7 @@ with DAG(
     dag_id="deftunes_api_pipeline_dag",
     description="Extract API users and sessions, transform, validate quality, and run dbt",
     default_args=default_args,
-    schedule=PIPELINE_SCHEDULE,
+    schedule_interval=PIPELINE_SCHEDULE,
     start_date=datetime(2020, 2, 1),
     end_date=datetime(2020, 4, 1),
     catchup=True,

@@ -48,7 +48,7 @@ with DAG(
     dag_id="deftunes_songs_pipeline_dag",
     description="Extract songs from RDS, transform, validate quality, and run dbt",
     default_args=default_args,
-    schedule=PIPELINE_SCHEDULE,
+    schedule_interval=PIPELINE_SCHEDULE,
     start_date=datetime(2020, 2, 1),
     end_date=datetime(2020, 3, 1),
     catchup=True,
