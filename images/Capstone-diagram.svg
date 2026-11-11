@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="430" viewBox="0 0 1180 430" role="img" aria-labelledby="title desc">
+<title id="title">DeFtunes Part 1 data engineering architecture</title>
+<desc id="desc">API and PostgreSQL data flow through Glue extraction, S3 landing, Glue and Iceberg transformation, Glue Data Catalog, Redshift Spectrum and Redshift serving.</desc>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#526581"/></marker></defs>
+<rect width="1180" height="430" fill="#f7f9fc"/>
+<text x="40" y="44" font-family="Arial,sans-serif" font-size="25" font-weight="bold" fill="#14243a">DeFtunes · Part 1 — ETL and data lake foundation</text>
+<g font-family="Arial,sans-serif" font-size="15" text-anchor="middle">
+<rect x="40" y="112" width="190" height="76" rx="12" fill="#e6f2ff" stroke="#2d76b7" stroke-width="2"/>
+<text x="135" y="142" font-weight="bold" fill="#173b5e">DeFtunes API</text><text x="135" y="166" fill="#173b5e">Users · Sessions</text>
+<rect x="40" y="238" width="190" height="76" rx="12" fill="#e8f6ee" stroke="#29935e" stroke-width="2"/>
+<text x="135" y="268" font-weight="bold" fill="#155235">PostgreSQL RDS</text><text x="135" y="292" fill="#155235">Songs catalogue</text>
+<rect x="300" y="174" width="170" height="90" rx="12" fill="#fff2d8" stroke="#c78a22" stroke-width="2"/>
+<text x="385" y="209" font-weight="bold" fill="#65410c">AWS Glue</text><text x="385" y="234" fill="#65410c">Extraction jobs</text>
+<rect x="540" y="174" width="170" height="90" rx="12" fill="#e9e6ff" stroke="#7164c7" stroke-width="2"/>
+<text x="625" y="209" font-weight="bold" fill="#39306f">Amazon S3</text><text x="625" y="234" fill="#39306f">Landing zone</text>
+<rect x="780" y="174" width="170" height="90" rx="12" fill="#fff0e8" stroke="#d57844" stroke-width="2"/>
+<text x="865" y="209" font-weight="bold" fill="#793a1e">Glue + Spark</text><text x="865" y="234" fill="#793a1e">Transform to Iceberg</text>
+<rect x="1010" y="90" width="145" height="78" rx="12" fill="#e5f5f2" stroke="#32988c" stroke-width="2"/>
+<text x="1082" y="120" font-weight="bold" fill="#155e56">Glue Catalog</text><text x="1082" y="144" fill="#155e56">Metadata</text>
+<rect x="1010" y="222" width="145" height="78" rx="12" fill="#e6f2ff" stroke="#2d76b7" stroke-width="2"/>
+<text x="1082" y="252" font-weight="bold" fill="#173b5e">Redshift</text><text x="1082" y="276" fill="#173b5e">Spectrum + serving</text>
+<path d="M230 150 L300 200" stroke="#526581" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+<path d="M230 276 L300 238" stroke="#526581" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+<path d="M470 219 L540 219" stroke="#526581" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+<path d="M710 219 L780 219" stroke="#526581" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+<path d="M950 199 C978 199 978 129 1010 129" stroke="#526581" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+<path d="M1082 168 L1082 222" stroke="#526581" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+</g>
+<text x="40" y="378" font-family="Arial,sans-serif" font-size="14" fill="#526581">Raw operational sources → S3 landing → Iceberg transformation zone → catalogued query and serving layer</text>
+</svg>

@@ -1,0 +1,12 @@
+dbt_modeling:
+  target: serving
+  outputs:
+    serving:
+      type: redshift
+      host: "<REDSHIFT_ENDPOINT>"
+      user: "<REDSHIFT_USERNAME>"
+      password: "<REDSHIFT_PASSWORD>"
+      port: 5439
+      dbname: dev
+      schema: deftunes_serving
+      threads: 1

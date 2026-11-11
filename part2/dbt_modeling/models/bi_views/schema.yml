@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: sales_per_artist_vw
+    description: "Aggregated sales by artist and year."
+    columns:
+      - name: session_year
+      - name: artist_name
+      - name: total_sales
+
+  - name: sales_per_country_vw
+    description: "Aggregated sales by country, month, and year."
+    columns:
+      - name: session_month
+      - name: session_year
+      - name: country_code
+      - name: total_sales
